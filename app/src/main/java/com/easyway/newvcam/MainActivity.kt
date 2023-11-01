@@ -8,8 +8,6 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.easyway.newvcam.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
-import org.reflections.Reflections
-import org.reflections.util.ConfigurationBuilder
 
 class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
@@ -17,8 +15,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val reflections = Reflections(ConfigurationBuilder().forPackages("androidx.camera.camera2.internal.compat"))
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

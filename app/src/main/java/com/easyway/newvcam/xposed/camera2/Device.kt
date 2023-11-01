@@ -42,6 +42,18 @@ class Device (
             .filterIsInstance<Surface>()
             .first(::isPreviewSurface)
 
+    private fun getPreviewSurface2(surfaces: List<*>): Surface {
+        surfaces.forEach(){
+            val surface = it as Surface
+
+            manager.showMessage("SURFACE ANALYZED: $surface")
+        }
+
+        return surfaces
+            .filterIsInstance<Surface>()
+            .first(::isPreviewSurface)
+    }
+
     @Suppress("DuplicatedCode")
     private fun one(){
         hookMethod(
@@ -54,14 +66,14 @@ class Device (
                     val previewSurface = getPreviewSurface(mhp.args[0] as List<*>)
 
                     manager.setCameraDevicePreviewSurface(cd, previewSurface)
-                } finally {
-                    mediaPlayer = MediaPlayer(manager)
-                        .apply {
-                            startFakeVideo(cd)
-                        }
+                } catch (_: NoSuchElementException){}
 
-                    mhp.args[0] = listOf(manager.virtualSurface)
-                }
+                mediaPlayer = MediaPlayer(manager)
+                    .apply {
+                        startFakeVideo(cd)
+                    }
+
+                mhp.args[0] = listOf(manager.virtualSurface)
             },
             List::class,
             CameraCaptureSession.StateCallback::class,
@@ -69,19 +81,17 @@ class Device (
         )
     }
 
-    private fun processOutputConfiguration(outputConfiguration: OutputConfiguration){
+    private fun processOutputConfiguration(outputConfiguration: OutputConfiguration): OutputConfiguration {
         var previewSurface: Surface? = null
 
         try {
             previewSurface = getPreviewSurface(outputConfiguration.surfaces)
-        } finally {
-            outputConfiguration.surfaces.clear()
+        } catch (_: NoSuchElementException){}
 
-            outputConfiguration.surfaces.add(manager.virtualSurface)
+        if(previewSurface != null)
+            manager.setCameraDevicePreviewSurface(cd, previewSurface)
 
-            if(previewSurface != null)
-                manager.setCameraDevicePreviewSurface(cd, previewSurface)
-        }
+        return OutputConfiguration(manager.virtualSurface)
     }
 
     private fun two(){
@@ -93,7 +103,12 @@ class Device (
 
                 val sessionConfiguration = mhp.args[0] as SessionConfiguration
 
-                sessionConfiguration.outputConfigurations.forEach(::processOutputConfiguration)
+                mhp.args[0] = SessionConfiguration(
+                    sessionConfiguration.sessionType,
+                    sessionConfiguration.outputConfigurations.map(::processOutputConfiguration),
+                    sessionConfiguration.executor,
+                    sessionConfiguration.stateCallback
+                )
 
                 mediaPlayer = MediaPlayer(manager)
                     .apply {
@@ -114,7 +129,7 @@ class Device (
                 val outputConfigurations = (mhp.args[0] as List<*>)
                     .filterIsInstance<OutputConfiguration>()
 
-                outputConfigurations.forEach(::processOutputConfiguration)
+                mhp.args[0] = outputConfigurations.map(::processOutputConfiguration)
 
                 mediaPlayer = MediaPlayer(manager)
                     .apply {
@@ -138,14 +153,14 @@ class Device (
                     val previewSurface = getPreviewSurface(mhp.args[1] as List<*>)
 
                     manager.setCameraDevicePreviewSurface(cd, previewSurface)
-                } finally {
-                    mediaPlayer = MediaPlayer(manager)
-                        .apply {
-                            startFakeVideo(cd)
-                        }
+                } catch (_: NoSuchElementException){}
 
-                    mhp.args[1] = listOf(manager.virtualSurface)
-                }
+                mediaPlayer = MediaPlayer(manager)
+                    .apply {
+                        startFakeVideo(cd)
+                    }
+
+                mhp.args[1] = listOf(manager.virtualSurface)
             },
             InputConfiguration::class,
             List::class,
@@ -164,7 +179,7 @@ class Device (
                 val outputConfigurations = (mhp.args[1] as List<*>)
                     .filterIsInstance<OutputConfiguration>()
 
-                outputConfigurations.forEach(::processOutputConfiguration)
+                mhp.args[1] = outputConfigurations.map(::processOutputConfiguration)
 
                 mediaPlayer = MediaPlayer(manager)
                     .apply {
@@ -190,14 +205,14 @@ class Device (
                     val previewSurface = getPreviewSurface(mhp.args[0] as List<*>)
 
                     manager.setCameraDevicePreviewSurface(cd, previewSurface)
-                } finally {
-                    mediaPlayer = MediaPlayer(manager)
-                        .apply {
-                            startFakeVideo(cd)
-                        }
+                } catch (_: NoSuchElementException) { }
 
-                    mhp.args[0] = listOf(manager.virtualSurface)
-                }
+                mediaPlayer = MediaPlayer(manager)
+                    .apply {
+                        startFakeVideo(cd)
+                    }
+
+                mhp.args[0] = listOf(manager.virtualSurface)
             },
             List::class,
             CameraCaptureSession.StateCallback::class,
@@ -215,7 +230,7 @@ class Device (
                 val outputConfigurations = (mhp.args[1] as List<*>)
                     .filterIsInstance<OutputConfiguration>()
 
-                outputConfigurations.forEach(::processOutputConfiguration)
+                mhp.args[1] = outputConfigurations.map(::processOutputConfiguration)
 
                 mediaPlayer = MediaPlayer(manager)
                     .apply {

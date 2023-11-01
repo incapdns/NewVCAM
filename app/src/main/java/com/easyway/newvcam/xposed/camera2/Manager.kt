@@ -36,6 +36,17 @@ class Manager(private val hookMain: HookMain) :
             },
             CameraDevice::class
         )
+
+        hookMethod(
+            stateCallback::class,
+            "onClosed",
+            { mhp ->
+                val cameraDevice = mhp.args[0] as CameraDevice
+
+                cameraDevices.removeIf { it.hasDevice(cameraDevice) }
+            },
+            CameraDevice::class
+        )
     }
 
     private fun first(){

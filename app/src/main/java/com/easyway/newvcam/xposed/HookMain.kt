@@ -29,7 +29,7 @@ class HookMain : IXposedHookLoadPackage, ICamerasHookable, XposedExtension() {
 
     override lateinit var virtualSurface: Surface
 
-    private lateinit var applicationContext: Context
+    private var applicationContext: Context? = null
     private val previewSurfaceTextures = LinkedList<String>()
     private val cameraDevicePreviewSurface = TreeMap<String, Surface>()
 
@@ -60,9 +60,16 @@ class HookMain : IXposedHookLoadPackage, ICamerasHookable, XposedExtension() {
     override fun getCameraDevicePreviewSurface(cd: CameraDevice) = cameraDevicePreviewSurface[cd.toString()]
 
     override fun showMessage(message: String){
-        Toast
-            .makeText(applicationContext, message, Toast.LENGTH_SHORT)
-            .show()
+        if(applicationContext == null)
+            return
+
+        try {
+          Toast
+              .makeText(applicationContext, message, Toast.LENGTH_SHORT)
+              .show()
+        } catch (_: NullPointerException){
+            Log.e(TAG, "NEWVCAM: $message")
+        }
     }
 
     private fun showInitMessage(){
@@ -97,7 +104,7 @@ class HookMain : IXposedHookLoadPackage, ICamerasHookable, XposedExtension() {
             TextureView::class,
             "getSurfaceTexture"
         ).then {
-            previewSurfaceTextures.push(it.toString())
+            previewSurfaceTextures.addFirst(it.toString())
         }
     }
 }
